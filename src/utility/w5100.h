@@ -18,7 +18,9 @@
 #include <SPI.h>
 
 // Safe for all chips
+//#define SPI_ETHERNET_SETTINGS SPISettings(14000000, MSBFIRST, SPI_MODE0)//*********************************************************
 #define SPI_ETHERNET_SETTINGS SPISettings(14000000, MSBFIRST, SPI_MODE0)
+
 
 // Safe for W5200 and W5500, but too fast for W5100
 // Uncomment this if you know you'll never need W5100 support.
@@ -437,10 +439,14 @@ private:
 		pinMode(ss_pin, OUTPUT);
 	}
 	inline static void setSS() {
-		digitalWrite(ss_pin, LOW);
+		//digitalWrite(ss_pin, LOW);//****************************************************************************************
+    //REG_WRITE(GPIO_OUT_W1TC_REG, BIT5);
+    GPIO.out_w1tc = ((uint32_t)1 << 5);
 	}
 	inline static void resetSS() {
-		digitalWrite(ss_pin, HIGH);
+		//digitalWrite(ss_pin, HIGH);//********************************************************************************************
+    //REG_WRITE(GPIO_OUT_W1TS_REG, BIT5);
+    GPIO.out_w1ts = ((uint32_t)1 << 5);
 	}
 #endif
 };
@@ -454,26 +460,13 @@ extern W5100Class W5100;
 #ifndef UTIL_H
 #define UTIL_H
 
-#ifndef htons
-// The host order of the Arduino platform is little endian.
-// Sometimes it is desired to convert to big endian (or
-// network order)
-
-// Host to Network short
-#define htons(x) ( (((x)&0xFF)<<8) | (((x)>>8)&0xFF) )
-
-// Network to Host short
+#define htons(x) ( (((x)<<8)&0xFF00) | (((x)>>8)&0xFF) )
 #define ntohs(x) htons(x)
 
-// Host to Network long
 #define htonl(x) ( ((x)<<24 & 0xFF000000UL) | \
                    ((x)<< 8 & 0x00FF0000UL) | \
                    ((x)>> 8 & 0x0000FF00UL) | \
                    ((x)>>24 & 0x000000FFUL) )
-
-// Network to Host long
 #define ntohl(x) htonl(x)
-
-#endif // !defined(htons)
 
 #endif
